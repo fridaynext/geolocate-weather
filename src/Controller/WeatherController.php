@@ -24,94 +24,82 @@ class WeatherController extends AppController
      */
     public function view()
     {
-//        if (!$path) {
-//            return $this->redirect('/');
-//        }
-//        if (in_array('..', $path, true) || in_array('.', $path, true)) {
-//            throw new ForbiddenException();
-//        }
-//        $page = $subpage = null;
-//
-//        if (!empty($path[0])) {
-//            $page = $path[0];
-//        }
-//        if (!empty($path[1])) {
-//            $subpage = $path[1];
-//        }
-//        $this->set(compact('page', 'subpage'));
-
+        /******** IP ADDRESS ********/
         // Get user's IP address as a default
-        //$user_ip = $this->request->clientIp(); // TODO: will use in production
-        //$this->set('user_ip', $user_ip);       // TODO: will use in production
-        $user_ip = '98.144.69.34';
-        $this->set('user_ip', $user_ip);
+        if ( !$this->request->getParam('user_ip') ) {
+            $user_ip = $this->request->clientIp(); // TODO: will use in production
+            $this->set('user_ip', $user_ip);       // TODO: will use in production
+        }
 
         // Grab lat/lon coords from IP address
-        $user_coords = $this->getUserCoords($user_ip);
-        //$this->set(compact('user_coords'));
+        $args = array(
+            'url' => 'https://freegeoip.app/json/',
+            'url_params' => $user_ip
+        );
+        $response = $this->apiCall($args);
+        // set IP to 'null' if unsuccessful
+        $user_coords = $response ? array($response['latitude'], $response['longitude']) : null;
         $this->set('user_coords', $user_coords);
 
-        // Get current weather for those lat/lon coords
-        $weather_arr = $this->getWeather($user_coords);
-        $this->set('weather', $weather_arr);
+        /******** WEATHER ********/
+        // Get list of closest locations for the previously attained IP coordinates
+        $args = array(
+            'url' => 'https://www.metaweather.com/api/location/search/?lattlong=',
+            'url_params' => $user_coords[0] .",". $user_coords[1]
+        );
+        $locations = $this->apiCall($args);
+        // Query for weather at first location in list
+        $args = array(
+            'url' => 'https://www.metaweather.com/api/location/',
+            'url_params' => $locations[0]['woeid'] . '/'
+        );
+        $weather = $this->apiCall($args);
+        $this->set('weather', $weather);
 
         // Render the weather view template
         return $this->render('weather');
     }
 
-
-//    public function view($id = null)
-//    {
-//
-//        return $this->render('weather');
-//
-//    }
-
-    private function getUserCoords($user_ip): array
+    public function search($user_ip = null)
     {
-        /**
-         * Latitude / Longitude Coordinates from IP
-         *
-         * This function will return [lat, lon] when provided an IP address
-         *
-         * @link https://freegeoip.app
-         */
-
-        $curl = curl_init();
-        curl_setopt_array($curl, array(
-            CURLOPT_URL => "https://freegeoip.app/json/" . $user_ip,
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_ENCODING => "",
-            CURLOPT_MAXREDIRS => 10,
-            CURLOPT_TIMEOUT => 30,
-            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-            CURLOPT_CUSTOMREQUEST => "GET",
-            CURLOPT_HTTPHEADER => array(
-                "accept: application/json",
-                "content-type: application/json"
-            ),
-        ));
-
-        $response = curl_exec($curl);
-        $err = curl_error($curl);
-
-        curl_close($curl);
-
-        if ($err) {
-            echo "cURL Error #:" . $err;
-        } else {
-            // The call was successful, sending back coords
-            $response_arr = json_decode($response, true);
-            $response = array($response_arr['latitude'], $response_arr['longitude']);
-            return $response;
+        // IP from search form will be present here
+        if($user_ip) {
+            $this->set('user_ip', $user_ip);
         }
+        // Grab lat/lon coords from IP address
+        $args = array(
+            'url' => 'https://freegeoip.app/json/',
+            'url_params' => $user_ip
+        );
+        $response = $this->apiCall($args);
+        // set IP to 'null' if unsuccessful
+        $user_coords = $response ? array($response['latitude'], $response['longitude']) : null;
+        $this->set('user_coords', $user_coords);
+
+        /******** WEATHER ********/
+        // Get list of closest locations for the previously attained IP coordinates
+        $args = array(
+            'url' => 'https://www.metaweather.com/api/location/search/?lattlong=',
+            'url_params' => $user_coords[0] .",". $user_coords[1]
+        );
+        $locations = $this->apiCall($args);
+        // Query for weather at first location in list
+        $args = array(
+            'url' => 'https://www.metaweather.com/api/location/',
+            'url_params' => $locations[0]['woeid'] . '/'
+        );
+        $weather = $this->apiCall($args);
+        $this->set('weather', $weather);
+
+        // Render the weather view template
+        return $this->render('weather');
     }
 
-    private function getWeather($lat_lon)
+    private function apiCall($args)
     {
         $curl = curl_init();
         curl_setopt_array($curl, array(
-            CURLOPT_URL => "https://www.metaweather.com/api/location/search/?lattlong=". $lat_lon[0] .",". $lat_lon[1],
+            CURLOPT_URL => $args['url'] . $args['url_params'],
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_ENCODING => "",
             CURLOPT_MAXREDIRS => 10,
@@ -131,11 +119,10 @@ class WeatherController extends AppController
 
         if ($err) {
             echo "cURL Error #:" . $err;
+            return false;
         } else {
-            // The call was successful, sending back weather
-            $response_arr = json_decode($response, true);
-
-            return $response_arr;
+            // The call was successful, return the response
+            return json_decode($response, true);
         }
     }
 

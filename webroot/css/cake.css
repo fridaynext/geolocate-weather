@@ -221,3 +221,6 @@ th {
         content: " \2190";
     }
 }
+li.list-group-item.details p {
+    margin-bottom: 10px;
+}
