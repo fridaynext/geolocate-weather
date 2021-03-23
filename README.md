@@ -6,4 +6,4 @@ I spent approximately 1.5 hours reading through the CakePHP documentation to com
 
 I spent about 2 hours putting the app together, including styling.
 
-![Weather Geolocation App](https://github.com/friday-next/geolocate-weather/readme.png)
+![Weather Geolocation App](https://github.com/fridaynext/geolocate-weather/readme.png)
