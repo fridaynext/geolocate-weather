@@ -76,19 +76,23 @@ th {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    max-width: 112rem;
+    /*max-width: 112rem;*/
     padding: 2rem;
     margin: 0 auto 2rem;
+    background: #343a40;
 }
 .top-nav-title a {
     font-size: 2.4rem;
-    color: #d33c43;
+    color: #FFF;
 }
-.top-nav-title span {
-    color: #404041;
+.top-nav-title a span {
+    position: relative;
+    bottom: -4px;
+    color: #FFF;
 }
 .top-nav-links a {
     margin: 0 0.5rem;
+    color: #FFF;
 }
 .top-nav-title a,
 .top-nav-links a {
@@ -107,6 +111,9 @@ th {
 .related {
     margin-top: 2rem;
 }
+
+/* Home Page */
+
 
 /* Flash messages */
 .message {
