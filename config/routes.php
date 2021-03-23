@@ -59,6 +59,8 @@ $routes->scope('/', function (RouteBuilder $builder) {
      */
     $builder->connect('/pages/*', 'Pages::display');
 
+    $builder->connect('/search/*', 'Weather::search');
+
     /*
      * Connect catchall routes for all controllers.
      *

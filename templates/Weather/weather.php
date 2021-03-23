@@ -1,7 +1,8 @@
     <h1 class="text-center">Enter an IP Address:</h1>
-    <div class="input-group input-group-lg w-25 mx-auto clearfix mb-5">
+    <div class="input-group input-group-lg w-50 mx-auto clearfix mb-5">
         <span class="input-group-text" id="inputGroup-sizing-lg">IP Address</span>
         <input type="text" class="form-control mb-0 text-center" id="ip-entry" aria-label="ip-address-entry" aria-describedby="inputGroup-sizing-lg" value="<?= $user_ip ?>">
+        <button class="btn btn-outline-secondary mb-0" type="button" id="search-button" style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; text-transform: none;">Search</button>
     </div>
     <div class="container" style="max-width: 1140px;">
         <div class="row justify-content-center mt-3">

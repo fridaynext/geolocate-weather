@@ -26,11 +26,46 @@ class WeatherController extends AppController
     {
         /******** IP ADDRESS ********/
         // Get user's IP address as a default
-        //$user_ip = $this->request->clientIp(); // TODO: will use in production
-        //$this->set('user_ip', $user_ip);       // TODO: will use in production
-        $user_ip = '98.144.69.34';
-        $this->set('user_ip', $user_ip);
+        if ( !$this->request->getParam('user_ip') ) {
+            $user_ip = $this->request->clientIp(); // TODO: will use in production
+            $this->set('user_ip', $user_ip);       // TODO: will use in production
+        }
 
+        // Grab lat/lon coords from IP address
+        $args = array(
+            'url' => 'https://freegeoip.app/json/',
+            'url_params' => $user_ip
+        );
+        $response = $this->apiCall($args);
+        // set IP to 'null' if unsuccessful
+        $user_coords = $response ? array($response['latitude'], $response['longitude']) : null;
+        $this->set('user_coords', $user_coords);
+
+        /******** WEATHER ********/
+        // Get list of closest locations for the previously attained IP coordinates
+        $args = array(
+            'url' => 'https://www.metaweather.com/api/location/search/?lattlong=',
+            'url_params' => $user_coords[0] .",". $user_coords[1]
+        );
+        $locations = $this->apiCall($args);
+        // Query for weather at first location in list
+        $args = array(
+            'url' => 'https://www.metaweather.com/api/location/',
+            'url_params' => $locations[0]['woeid'] . '/'
+        );
+        $weather = $this->apiCall($args);
+        $this->set('weather', $weather);
+
+        // Render the weather view template
+        return $this->render('weather');
+    }
+
+    public function search($user_ip = null)
+    {
+        // IP from search form will be present here
+        if($user_ip) {
+            $this->set('user_ip', $user_ip);
+        }
         // Grab lat/lon coords from IP address
         $args = array(
             'url' => 'https://freegeoip.app/json/',
