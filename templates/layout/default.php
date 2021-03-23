@@ -51,7 +51,7 @@ $cakeDescription = 'GeoWeather';
         </div>
     </nav>
     <main class="main">
-        <div class="container">
+        <div class="container w-100" style="max-width: 1140px;">
             <?= $this->Flash->render() ?>
             <?= $this->fetch('content') ?>
         </div>

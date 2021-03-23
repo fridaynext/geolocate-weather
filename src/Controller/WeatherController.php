@@ -51,11 +51,10 @@ class WeatherController extends AppController
         // Query for weather at first location in list
         $args = array(
             'url' => 'https://www.metaweather.com/api/location/',
-            'url_params' => $locations[0]['woeid']
+            'url_params' => $locations[0]['woeid'] . '/'
         );
         $weather = $this->apiCall($args);
-        print_r($weather);die();
-        $this->set('weather', $locations[0]['woeid']);
+        $this->set('weather', $weather);
 
         // Render the weather view template
         return $this->render('weather');
@@ -89,38 +88,6 @@ class WeatherController extends AppController
         } else {
             // The call was successful, return the response
             return json_decode($response, true);
-        }
-    }
-
-    private function getWeather($lat_lon)
-    {
-        $curl = curl_init();
-        curl_setopt_array($curl, array(
-            CURLOPT_URL => "https://www.metaweather.com/api/location/search/?lattlong=". $lat_lon[0] .",". $lat_lon[1],
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_ENCODING => "",
-            CURLOPT_MAXREDIRS => 10,
-            CURLOPT_TIMEOUT => 30,
-            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-            CURLOPT_CUSTOMREQUEST => "GET",
-            CURLOPT_HTTPHEADER => array(
-                "accept: application/json",
-                "content-type: application/json"
-            ),
-        ));
-
-        $response = curl_exec($curl);
-        $err = curl_error($curl);
-
-        curl_close($curl);
-
-        if ($err) {
-            echo "cURL Error #:" . $err;
-        } else {
-            // The call was successful, use closest location (first in list) to find weather
-            $response_arr = json_decode($response, true);
-
-            return $response_arr;
         }
     }
 
